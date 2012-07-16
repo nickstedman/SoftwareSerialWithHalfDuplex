@@ -2,18 +2,18 @@
 SoftwareSerialWithHalfDuplex.cpp (formerly SoftwareSerial.cpp) - 
 Multi-instance software serial with half duplex library for Arduino/Wiring
 
-  By default the library works the same as the SoftwareSerial library, but by adding a couple of additional arguments
-  it can be configured for half-duplex. In that case, the transmit pin is set by default to an input, with the pull-up set. 
-  When transmitting, the pin temporarily switches to an output until the byte is sent, then flips back to input. When a module is 
-  receiving it should not be able to transmit, and vice-versa. This library probably won't work as is if you need inverted-logic.
-  
-  This is a first draft of the library and test programs. It appears to work, but has only been tested on a limited basis,
-  and hasn't yet been tested with any native half-duplex devices (like the bioloid ax12 robot servo). 
-  Seems fairly reliable up to 57600 baud. As with all serial neither error checking, nor addressing are implemented, 
-  so it is likely that you will need to do this yourself. Also, you can make use of other protocols such as i2c. 
-  I am looking for any feedback, advice and help at this stage. 
-  Changes from SoftwareSerial have been noted with a comment of "//NS" for your review. Only a few were required.
-  Contact me at n.stedman@steddyrobots.com, or on the arduino forum.
+By default the library works the same as the SoftwareSerial library, but by adding a couple of additional arguments
+it can be configured for half-duplex. In that case, the transmit pin is set by default to an input, with the pull-up set. 
+When transmitting, the pin temporarily switches to an output until the byte is sent, then flips back to input. When a module is 
+receiving it should not be able to transmit, and vice-versa. This library probably won't work as is if you need inverted-logic.
+
+This is a first draft of the library and test programs. It appears to work, but has only been tested on a limited basis.
+The library also works to communicate with Robotis Bioloid AX-12 motors.
+Seems fairly reliable up to 57600 baud. As with all serial neither error checking, nor addressing are implemented, 
+so it is likely that you will need to do this yourself. Also, you can make use of other protocols such as i2c. 
+I am looking for any feedback, advice and help at this stage. 
+Changes from SoftwareSerial have been noted with a comment of "//NS" for your review. Only a few were required.
+Contact me at n.stedman@steddyrobots.com, or on the arduino forum.
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
