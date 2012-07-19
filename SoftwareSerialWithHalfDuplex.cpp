@@ -494,8 +494,10 @@ size_t SoftwareSerialWithHalfDuplex::write(uint8_t b)
   }
   
   // NS - Set Pin back to Input
-  if(!_full_duplex)															//NS Added
-	  pinMode(_transmitPin, INPUT);											//NS Added       
+  if(!_full_duplex){														//NS Added
+	  pinMode(_transmitPin, INPUT);											//NS Added 
+	  tx_pin_write(HIGH); 													//NS Added   
+  }
   
   SREG = oldSREG; // turn interrupts back on
   tunedDelay(_tx_delay);
