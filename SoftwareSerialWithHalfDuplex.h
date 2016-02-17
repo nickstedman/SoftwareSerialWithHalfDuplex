@@ -19,6 +19,18 @@ use of other protocols such as i2c. I am looking for any feedback, advice
 and help at this stage. Changes from SoftwareSerial have been noted with a 
 comment of "//NS" for your review. Only a few were required.
 Contact me at n.stedman@steddyrobots.com, or on the arduino forum.
+----
+SoftwareSerial.cpp (formerly NewSoftSerial.cpp) - 
+Multi-instance software serial library for Arduino/Wiring
+-- Interrupt-driven receive and other improvements by ladyada
+   (http://ladyada.net)
+-- Tuning, circular buffer, derivation from class Print/Stream,
+   multi-instance support, porting to 8MHz processors,
+   various optimizations, PROGMEM delay tables, inverse logic and 
+   direct port writing by Mikal Hart (http://www.arduiniana.org)
+-- Pin change interrupt macros by Paul Stoffregen (http://www.pjrc.com)
+-- 20MHz processor support by Garrett Mace (http://www.macetech.com)
+-- ATmega1280/2560 support by Brett Hagman (http://www.roguerobotics.com/)
 
 This library is free software; you can redistribute it and/or
 modify it under the terms of the GNU Lesser General Public
@@ -60,15 +72,18 @@ private:
   uint8_t _transmitPin;								//NS Added
   uint8_t _transmitBitMask;
   volatile uint8_t *_transmitPortRegister;
-  
+  volatile uint8_t *_pcint_maskreg;
+  uint8_t _pcint_maskvalue;
+
+  // Expressed as 4-cycle delays (must never be 0!)
   uint16_t _rx_delay_centering;
   uint16_t _rx_delay_intrabit;
   uint16_t _rx_delay_stopbit;
   uint16_t _tx_delay;
 
-  uint16_t _buffer_overflow:1;
-  uint16_t _inverse_logic:1;
-  uint16_t _full_duplex:1;							//NS Added
+  bool _buffer_overflow;
+  bool _inverse_logic;
+  bool _full_duplex;							//NS Added
 
   // static data
   static char _receive_buffer[_SS_MAX_RX_BUFF]; 
@@ -77,11 +92,15 @@ private:
   static SoftwareSerialWithHalfDuplex *active_object;
 
   // private methods
-  void recv();
+  void recv() __attribute__((__always_inline__));
   uint8_t rx_pin_read();
-  void tx_pin_write(uint8_t pin_state);
+  //void tx_pin_write(uint8_t pin_state) __attribute__((__always_inline__));
   void setTX(uint8_t transmitPin);
   void setRX(uint8_t receivePin);
+  void setRxIntMsk(bool enable) __attribute__((__always_inline__));
+
+  // Return num - sub, or 1 if the result would be < 1
+  static uint16_t subtract_cap(uint16_t num, uint16_t sub);
 
   // private static method for timing
   static inline void tunedDelay(uint16_t delay);
@@ -94,21 +113,24 @@ public:
   bool listen();
   void end();
   bool isListening() { return this == active_object; }
-  bool overflow() { bool ret = _buffer_overflow; _buffer_overflow = false; return ret; }
+  bool stopListening();
+  bool overflow() { bool ret = _buffer_overflow; if (ret) _buffer_overflow = false; return ret; }
   int peek();
 
   virtual size_t write(uint8_t byte);
   virtual int read();
   virtual int available();
   virtual void flush();
+  operator bool() { return true; }
   
   using Print::write;
 
   // public only for easy access by interrupt handlers
-  static inline void handle_interrupt();
+  static inline void handle_interrupt() __attribute__((__always_inline__));
 };
 
 // Arduino 0012 workaround
+#ifdef int
 #undef int
 #undef char
 #undef long
@@ -116,5 +138,5 @@ public:
 #undef float
 #undef abs
 #undef round
-
+#endif
 #endif
